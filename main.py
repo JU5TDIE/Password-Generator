@@ -1,56 +1,58 @@
+import sys
 import random
 import string
 import time
+from gui import Ui_MainWindow
+from PyQt5 import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QIntValidator
 
-history = open("history.txt", 'a')
-
-while True:
-    print("(1) 알파벳")
-    print("(2). 알파벳 + 숫자")
-    print("(3) 알파벳 + 숫자 + 특수문자")
-    print("")
-    method = input("방식 : ")
+class kinwriter(QMainWindow, Ui_MainWindow): 
     
-    if method == "1":
-        length = input("비밀번호 길이 : ")
-        pw = "".join([random.choice(string.uppercase) for _ in range(int(length))])
-        now = time.localtime()
-        time = "%04d-%02d-%02d-%02dh-%02dm-%02ds" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
-        history.write(pw)
-        history.write("  -  ")
-        history.write(str(time))
-        history.write("\n", )
-        history.close()
-        print(pw)
-        break
+    def __init__(self):
 
-    elif method == "2":
-        length = input("비밀번호 길이 : ")
-        pw = "".join([random.choice(string.ascii_letters + string.digits) for _ in range(int(length))])
-        now = time.localtime()
-        time = "%04d-%02d-%02d-%02dh-%02dm-%02ds" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
-        history.write(pw)
-        history.write("  -  ")
-        history.write(str(time))
-        history.write("\n", )
-        history.close()
-        print(pw)
-        break
+        super().__init__()
 
-    elif method == "3":
-        length = input("비밀번호 길이 : ")
-        pw = "".join([random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(int(length))])
-        now = time.localtime()
-        time = "%04d-%02d-%02d-%02dh-%02dm-%02ds" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
-        history.write(pw)
-        history.write("  -  ")
-        history.write(str(time))
-        history.write("\n", )
-        history.close()
-        print(pw)
-        break
+        self.setupUi(self)
+        self.show()
+        self.setFixedSize(248, 177)
+        self.pushButton_generate.setEnabled(False)
+        self.onlyInt = QIntValidator()
+        self.lineEdit_length.setValidator(self.onlyInt)
 
-    else:
-        print("")
-        print("Choose Again")
-        print("")
+    def setting(self):
+        if self.checkBox_ascii.isChecked()==True and self.checkBox_digits.isChecked()==False and self.checkBox_punctuation.isChecked()==False:
+            self.method = string.ascii_letters
+        elif self.checkBox_ascii.isChecked()==False and self.checkBox_digits.isChecked()==True and self.checkBox_punctuation.isChecked()==False:
+            self.method = string.digits
+        elif self.checkBox_ascii.isChecked()==False and self.checkBox_digits.isChecked()==False and self.checkBox_punctuation.isChecked()==True:
+            self.method = string.punctuation
+        elif self.checkBox_ascii.isChecked()==True and self.checkBox_digits.isChecked()==True and self.checkBox_punctuation.isChecked()==False:
+            self.method = string.ascii_letters + string.digits
+        elif self.checkBox_ascii.isChecked()==False and self.checkBox_digits.isChecked()==True and self.checkBox_punctuation.isChecked()==True:
+            self.method = string.digits + string.punctuation
+        elif self.checkBox_ascii.isChecked()==True and self.checkBox_digits.isChecked()==False and self.checkBox_punctuation.isChecked()==True:
+            self.method = string.ascii_letters + string.punctuation
+        elif self.checkBox_ascii.isChecked()==True and self.checkBox_digits.isChecked()==True and self.checkBox_punctuation.isChecked()==True:
+            self.method = string.ascii_letters + string.digits + string.punctuation
+        else:
+            pass
+    
+    def generate(self):
+        self.history = open("history.txt", 'a')
+        self.textBrowser_output.clear()
+        self.length = self.lineEdit_length.text()
+        self.pw = "".join([random.choice(self.method) for _ in range(int(self.length))])
+        self.history.write(self.pw)
+        self.history.write("\n", )
+        self.history.close()
+        self.textBrowser_output.append(self.pw)
+
+    def on_text_changed(self):
+        self.pushButton_generate.setEnabled(bool(self.lineEdit_length.text()) and bool(self.checkBox_ascii.isChecked()))
+
+app = QApplication([])
+sn = kinwriter()
+QApplication.processEvents()
+sys.exit(app.exec_())
